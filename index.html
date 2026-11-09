@@ -76,11 +76,21 @@
         </section>
         <section id="createSection" class="section">
           <div class="page-head"><div><h1>Buat Data Surat</h1><p>Isi informasi dasar surat untuk menyimpannya sebagai draft.</p></div></div>
-          <div class="notice">Versi awal menyimpan data surat sebagai draft. Fitur template kop surat, persetujuan, penomoran resmi otomatis, dan ekspor PDF akan ditambahkan pada tahap berikutnya.</div>
+          <div class="notice">Nomor surat keluar dibuat otomatis berdasarkan kode jabatan, jenis surat, organisasi, bulan Romawi, dan tahun. Nomor urut dimulai kembali dari 001 setiap tahun.</div>
           <div class="panel"><div class="panel-head"><h3>Informasi Surat</h3></div><div class="panel-body">
             <form id="letterForm"><div class="form-grid">
               <div><label>Jenis Surat</label><select id="letterType" required><option value="outgoing">Surat Keluar</option><option value="incoming">Surat Masuk</option></select></div>
               <div><label>Tanggal Surat</label><input id="letterDate" type="date" required></div>
+              <div id="outgoingCodeFields" class="full code-fields">
+                <strong style="font-size:13px;color:var(--navy)">Penomoran Surat Keluar</strong>
+                <div class="form-grid">
+                  <div><label for="positionCode">Kode Jabatan</label><select id="positionCode"><option value="">Pilih kode jabatan</option></select></div>
+                  <div><label for="purposeCode">Kode Jenis Surat</label><select id="purposeCode"><option value="">Pilih kode jenis surat</option></select></div>
+                  <div><label for="organizationCode">Kode Organisasi</label><select id="organizationCode"><option value="">Pilih organisasi</option></select></div>
+                </div>
+                <div class="code-preview" id="numberPreview">001/A.1/OPPD/X/2026</div>
+                <small style="display:block;color:var(--muted);margin-top:7px">Pratinjau nomor. Nomor urut final ditentukan otomatis oleh database saat surat disimpan.</small>
+              </div>
               <div class="full"><label>Perihal</label><input id="subject" maxlength="250" placeholder="Contoh: Undangan Rapat Koordinasi" required></div>
               <div><label>Pengirim</label><input id="sender" placeholder="Nama pengirim / instansi"></div>
               <div><label>Penerima</label><input id="recipient" placeholder="Nama penerima / instansi"></div>
@@ -131,25 +141,28 @@
   const romanMonth = month => ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][month-1] || "I";
   const optionsBy = category => codeOptions.filter(x=>x.category===category && x.is_active);
   function fillSelect(id, category, placeholder) {
-    const select=$(id), previous=select.value;
+    const select=$(id); if(!select)return;
+    const previous=select.value;
     select.innerHTML=`<option value="">${placeholder}</option>`+optionsBy(category).map(x=>`<option value="${escapeHTML(x.code)}">${escapeHTML(x.code)} — ${escapeHTML(x.label)}</option>`).join("");
     if([...select.options].some(o=>o.value===previous))select.value=previous;
   }
   function updateNumberPreview() {
-    const date=$("letterDate").value ? new Date($("letterDate").value+"T00:00:00") : new Date();
+    const preview=$("numberPreview"); if(!preview)return;
+    const date=$("letterDate")?.value ? new Date($("letterDate").value+"T00:00:00") : new Date();
     const year=date.getFullYear(), month=romanMonth(date.getMonth()+1);
-    const p=$("positionCode").value, k=$("purposeCode").value, org=$("organizationCode").value;
-    $("numberPreview").textContent=`${String(1).padStart(3,"0")}/${p||"A"}.${k||"1"}/${org||"OPPD"}/${month}/${year} (nomor urut otomatis)`;
+    const p=$("positionCode")?.value||"A", k=$("purposeCode")?.value||"1", org=$("organizationCode")?.value||"OPPD";
+    preview.textContent=`001/${p}.${k}/${org}/${month}/${year} (nomor urut otomatis)`;
   }
   async function loadCodeOptions() {
     const {data,error}=await db.from("letter_code_options").select("id,category,code,label,is_active").order("category").order("code");
-    if(error){showToast("Gagal memuat kode surat: "+error.message);return;}
+    if(error){showToast("Gagal memuat kode surat: "+error.message);return false;}
     codeOptions=data||[];
     fillSelect("positionCode","position","Pilih kode jabatan");
     fillSelect("purposeCode","purpose","Pilih kode jenis surat");
     fillSelect("organizationCode","organization","Pilih organisasi");
     renderCodeLists();
     updateNumberPreview();
+    return true;
   }
   function renderCodeLists() {
     const groups=[["position","positionList"],["purpose","purposeList"],["organization","organizationList"]];
@@ -161,10 +174,19 @@
     document.querySelectorAll("[data-delete-code]").forEach(btn=>btn.addEventListener("click",()=>deleteCode(btn.dataset.deleteCode)));
   }
   async function addCode(category, code, label) {
-    if(!currentProfile || currentProfile.role!=="admin")return;
-    const {error}=await db.from("letter_code_options").insert({category,code:code.trim().toUpperCase(),label:label.trim(),is_active:true});
-    if(error){showToast("Gagal menambah kode: "+error.message);return;}
-    showToast("Kode berhasil ditambahkan."); await loadCodeOptions();
+    if(!currentProfile || currentProfile.role!=="admin"){showToast("Hanya administrator yang dapat menambah kode.");return false;}
+    if(!code.trim() || !label.trim()){showToast("Kode dan nama wajib diisi.");return false;}
+    try {
+      const {error}=await db.from("letter_code_options").insert({category,code:code.trim().toUpperCase(),label:label.trim(),is_active:true});
+      if(error){showToast("Gagal menambah kode: "+error.message);return false;}
+      await loadCodeOptions();
+      showToast("Kode berhasil ditambahkan.");
+      return true;
+    } catch(err) {
+      console.error("addCode error:",err);
+      showToast("Terjadi kesalahan: "+(err?.message||"silakan coba lagi"));
+      return false;
+    }
   }
   async function toggleCode(id, active) {
     const {error}=await db.from("letter_code_options").update({is_active:!active}).eq("id",id);
@@ -231,11 +253,11 @@
   document.querySelectorAll("[data-section]").forEach(btn=>btn.addEventListener("click",()=>navigate(btn.dataset.section)));
   document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>navigate(btn.dataset.go)));
   $("searchLetters").addEventListener("input",renderAllRows);
-  $("letterType").addEventListener("change",()=>{$("outgoingCodeFields").classList.toggle("hidden",$("letterType").value!=="outgoing");});
-  ["positionCode","purposeCode","organizationCode","letterDate"].forEach(id=>$(id).addEventListener("change",updateNumberPreview));
-  $("positionForm").addEventListener("submit",async e=>{e.preventDefault();await addCode("position",$("positionValue").value,$("positionLabel").value);e.target.reset();});
-  $("purposeForm").addEventListener("submit",async e=>{e.preventDefault();await addCode("purpose",$("purposeValue").value,$("purposeLabel").value);e.target.reset();});
-  $("organizationForm").addEventListener("submit",async e=>{e.preventDefault();await addCode("organization",$("organizationValue").value,$("organizationLabel").value);e.target.reset();});
+  $("letterType").addEventListener("change",()=>{const fields=$("outgoingCodeFields");if(fields)fields.classList.toggle("hidden",$("letterType").value!=="outgoing");});
+  ["positionCode","purposeCode","organizationCode","letterDate"].forEach(id=>$(id)?.addEventListener("change",updateNumberPreview));
+  $("positionForm").addEventListener("submit",async e=>{e.preventDefault();if(await addCode("position",$("positionValue").value,$("positionLabel").value))e.target.reset();});
+  $("purposeForm").addEventListener("submit",async e=>{e.preventDefault();if(await addCode("purpose",$("purposeValue").value,$("purposeLabel").value))e.target.reset();});
+  $("organizationForm").addEventListener("submit",async e=>{e.preventDefault();if(await addCode("organization",$("organizationValue").value,$("organizationLabel").value))e.target.reset();});
   $("letterForm").addEventListener("submit",async e=>{
     e.preventDefault(); if(!currentUser)return;
     const outgoing=$("letterType").value==="outgoing";
@@ -247,7 +269,7 @@
     const {error}=await db.rpc("create_letter_with_number",payload);
     $("saveLetterBtn").disabled=false; $("saveLetterBtn").textContent="Simpan sebagai Draft";
     if(error){$("formMessage").textContent="Gagal menyimpan: "+error.message;return;}
-    $("letterForm").reset(); $("letterDate").value=new Date().toISOString().slice(0,10);$("outgoingCodeFields").classList.remove("hidden");
+    $("letterForm").reset(); $("letterDate").value=new Date().toISOString().slice(0,10);$("outgoingCodeFields").classList.remove("hidden");updateNumberPreview();
     showToast("Surat berhasil disimpan dengan nomor resmi."); await refreshLetters(); navigate("letters");
   });
   db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"){showLogin();} });
