@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101b2d">
+  <title>DARUSSALAM E-SURAT</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--navy:#101b2d;--navy2:#17263d;--gold:#c6a15b;--cream:#f6f4ef;--ink:#1d2939;--muted:#758195;--line:#e7e9ee;--white:#fff;--green:#17845d;--red:#b54747}
+    *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}
+    .hidden{display:none!important}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 10%,#263b58 0,#101b2d 48%,#0a1220 100%)}
+    .login-card{width:min(440px,100%);background:#fff;border-radius:22px;padding:34px;box-shadow:0 24px 70px #0005}
+    .brand-mark{width:54px;height:54px;border-radius:16px;background:var(--navy);color:var(--gold);display:grid;place-items:center;font-size:24px;margin-bottom:18px}
+    .eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:800}.login-card h1{margin:7px 0 5px;font-size:25px;color:var(--navy)}.sub{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 24px}
+    label{display:block;font-size:12px;font-weight:700;color:#465267;margin:15px 0 7px}input,select,textarea{width:100%;padding:12px 13px;border:1px solid #dce1e8;border-radius:10px;background:#fff;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px #c6a15b22}
+    .btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700}.btn-primary{background:var(--navy);color:#fff}.btn-primary:hover{background:#223753}.btn-gold{background:var(--gold);color:#172235}.btn-light{background:#f0f2f5;color:#334155}.btn-danger{background:#fff0f0;color:var(--red)}.btn-block{width:100%;margin-top:20px}.message{font-size:12px;margin-top:14px;min-height:18px;color:var(--red)}
+    .app{min-height:100vh;display:grid;grid-template-columns:250px 1fr}.sidebar{background:var(--navy);color:#fff;padding:25px 17px;display:flex;flex-direction:column;min-height:100vh}.side-brand{display:flex;gap:12px;align-items:center;padding:0 9px 28px;border-bottom:1px solid #ffffff20}.side-logo{width:42px;height:42px;border:1px solid #c6a15b88;border-radius:13px;display:grid;place-items:center;color:var(--gold);font-size:20px}.side-brand strong{display:block;font-size:13px;letter-spacing:.7px}.side-brand small{color:#aeb9c8;font-size:10px}
+    .nav-label{font-size:10px;letter-spacing:1.5px;color:#8391a5;font-weight:800;padding:25px 11px 9px}.nav-btn{width:100%;text-align:left;border:0;background:transparent;color:#c5ced9;padding:12px;border-radius:9px;margin:2px 0;font-size:13px}.nav-btn.active,.nav-btn:hover{background:#ffffff12;color:#fff}.nav-btn span{display:inline-block;width:25px;color:var(--gold)}.side-bottom{margin-top:auto;padding:18px 8px 0;border-top:1px solid #ffffff20;color:#9eabba;font-size:11px;line-height:1.6}
+    .main{min-width:0}.topbar{height:75px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px}.topbar h2{font-size:16px;margin:0;color:var(--navy)}.user-chip{display:flex;gap:10px;align-items:center;font-size:12px}.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#f2ead9;color:#765b27;font-weight:800}.user-chip small{display:block;color:var(--muted);margin-top:2px}.content{padding:30px 34px;max-width:1450px;margin:auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:24px}.page-head h1{font-size:23px;color:var(--navy);margin:0 0 6px}.page-head p{margin:0;color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:25px}.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:19px}.stat-top{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.stat-icon{width:32px;height:32px;border-radius:9px;background:#f5efdf;color:#9a7838;display:grid;place-items:center}.stat strong{display:block;font-size:27px;color:var(--navy);margin-top:12px}.stat small{color:var(--muted);font-size:11px}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}.panel-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h3{margin:0;color:var(--navy);font-size:14px}.panel-body{padding:20px}.toolbar{display:flex;gap:10px;align-items:center}.toolbar input{max-width:250px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th,td{text-align:left;padding:13px 16px;border-bottom:1px solid #edf0f3;font-size:12px}th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#8590a0;background:#fafbfc}td{color:#344054}.pill{display:inline-block;border-radius:30px;padding:5px 9px;font-size:10px;font-weight:800;background:#f0f2f5;color:#596579}.pill.draft{background:#fff5df;color:#946c20}.pill.approved{background:#e8f6ef;color:#18794e}.empty{text-align:center;padding:35px;color:var(--muted);font-size:13px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.form-grid .full{grid-column:1/-1}.actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}.notice{background:#fff9e9;border:1px solid #f0dfb6;border-radius:10px;padding:12px 14px;font-size:12px;color:#735c2b;line-height:1.5;margin-bottom:18px}
+    .section{display:none}.section.active{display:block}.toast{position:fixed;right:22px;bottom:22px;background:var(--navy);color:#fff;padding:13px 17px;border-radius:10px;font-size:12px;box-shadow:0 8px 30px #0002;z-index:10}
+    @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{min-height:auto;padding:14px}.side-brand{padding-bottom:12px}.sidebar nav,.nav-label,.side-bottom{display:none}.topbar{padding:0 18px}.content{padding:22px 18px}.stats{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.stats{grid-template-columns:1fr 1fr;gap:9px}.stat{padding:13px}.stat strong{font-size:22px}.page-head{flex-direction:column}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.login-card{padding:25px}}
+    @media print{.sidebar,.topbar,.no-print,.page-head button{display:none!important}.app{display:block}.content{padding:0}.panel{border:0}.panel-head{padding-left:0}body{background:#fff}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login-wrap">
+    <div class="login-card">
+      <div class="brand-mark">✦</div>
+      <div class="eyebrow">Pondok Pesantren Darussalam</div>
+      <h1>DARUSSALAM E-SURAT</h1>
+      <p class="sub">Sistem Administrasi Persuratan Digital. Masuk menggunakan akun admin atau staf yang telah didaftarkan.</p>
+      <form id="loginForm">
+        <label for="email">Email</label><input id="email" type="email" autocomplete="username" placeholder="nama@contoh.com" required>
+        <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required>
+        <button class="btn btn-primary btn-block" type="submit" id="loginBtn">Masuk ke Dashboard</button>
+        <div id="loginMessage" class="message"></div>
+      </form>
+      <p style="font-size:11px;color:#98a2b3;margin:20px 0 0">Akses terbatas untuk pengelola administrasi pesantren.</p>
+    </div>
+  </section>
+
+  <div id="appView" class="app hidden">
+    <aside class="sidebar">
+      <div class="side-brand"><div class="side-logo">✦</div><div><strong>DARUSSALAM E-SURAT</strong><small>ADMINISTRATION SYSTEM</small></div></div>
+      <nav>
+        <div class="nav-label">MENU UTAMA</div>
+        <button class="nav-btn active" data-section="dashboard"><span>▦</span>Dashboard</button>
+        <button class="nav-btn" data-section="letters"><span>▤</span>Data Surat</button>
+        <button class="nav-btn" data-section="create"><span>＋</span>Buat Surat</button>
+        <div class="nav-label">PENGELOLAAN</div>
+        <button class="nav-btn" data-section="profile"><span>◎</span>Profil Akun</button>
+      </nav>
+      <div class="side-bottom">Pondok Pesantren Darussalam<br>Administrasi Persuratan Digital<br><span style="color:#c6a15b">Versi awal · 1.0</span></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><h2 id="topTitle">Dashboard</h2><div class="user-chip"><div class="avatar" id="avatar">A</div><div><strong id="userName">Pengguna</strong><small id="userRole">Staf</small></div><button class="btn btn-light" id="logoutBtn" style="margin-left:8px">Keluar</button></div></header>
+      <div class="content">
+        <section id="dashboardSection" class="section active">
+          <div class="page-head"><div><h1>Dashboard Administrasi</h1><p>Ringkasan aktivitas persuratan Pondok Pesantren Darussalam.</p></div><button class="btn btn-primary" data-go="create">＋ Buat Surat</button></div>
+          <div class="stats">
+            <div class="stat"><div class="stat-top">Total Surat <span class="stat-icon">▤</span></div><strong id="totalCount">—</strong><small>Seluruh surat tersimpan</small></div>
+            <div class="stat"><div class="stat-top">Surat Masuk <span class="stat-icon">↙</span></div><strong id="incomingCount">—</strong><small>Dokumen diterima</small></div>
+            <div class="stat"><div class="stat-top">Surat Keluar <span class="stat-icon">↗</span></div><strong id="outgoingCount">—</strong><small>Dokumen diterbitkan</small></div>
+            <div class="stat"><div class="stat-top">Draft <span class="stat-icon">◷</span></div><strong id="draftCount">—</strong><small>Menunggu proses</small></div>
+          </div>
+          <div class="panel"><div class="panel-head"><h3>Surat Terbaru</h3><button class="btn btn-light" data-go="letters">Lihat Semua</button></div><div class="table-wrap"><table><thead><tr><th>Nomor Surat</th><th>Perihal</th><th>Jenis</th><th>Tanggal</th><th>Status</th></tr></thead><tbody id="recentRows"></tbody></table></div></div>
+        </section>
+        <section id="lettersSection" class="section">
+          <div class="page-head"><div><h1>Data Surat</h1><p>Kelola dan telusuri arsip surat masuk maupun surat keluar.</p></div><button class="btn btn-primary" data-go="create">＋ Buat Surat</button></div>
+          <div class="panel"><div class="panel-head"><h3>Arsip Persuratan</h3><div class="toolbar no-print"><input id="searchLetters" placeholder="Cari nomor atau perihal..."><button class="btn btn-light" onclick="window.print()">Cetak</button></div></div><div class="table-wrap"><table><thead><tr><th>Nomor Surat</th><th>Perihal</th><th>Jenis</th><th>Tanggal</th><th>Status</th></tr></thead><tbody id="allRows"></tbody></table></div></div>
+        </section>
+        <section id="createSection" class="section">
+          <div class="page-head"><div><h1>Buat Data Surat</h1><p>Isi informasi dasar surat untuk menyimpannya sebagai draft.</p></div></div>
+          <div class="notice">Versi awal menyimpan data surat sebagai draft. Fitur template kop surat, persetujuan, penomoran resmi otomatis, dan ekspor PDF akan ditambahkan pada tahap berikutnya.</div>
+          <div class="panel"><div class="panel-head"><h3>Informasi Surat</h3></div><div class="panel-body">
+            <form id="letterForm"><div class="form-grid">
+              <div><label>Jenis Surat</label><select id="letterType" required><option value="outgoing">Surat Keluar</option><option value="incoming">Surat Masuk</option></select></div>
+              <div><label>Tanggal Surat</label><input id="letterDate" type="date" required></div>
+              <div class="full"><label>Perihal</label><input id="subject" maxlength="250" placeholder="Contoh: Undangan Rapat Koordinasi" required></div>
+              <div><label>Pengirim</label><input id="sender" placeholder="Nama pengirim / instansi"></div>
+              <div><label>Penerima</label><input id="recipient" placeholder="Nama penerima / instansi"></div>
+              <div class="full"><label>Isi / Ringkasan Surat</label><textarea id="letterContent" rows="5" placeholder="Tuliskan ringkasan atau isi surat..."></textarea></div>
+            </div><div class="actions"><button type="button" class="btn btn-light" data-go="letters">Batal</button><button class="btn btn-primary" id="saveLetterBtn" type="submit">Simpan sebagai Draft</button></div><div id="formMessage" class="message"></div></form>
+          </div></div>
+        </section>
+        <section id="profileSection" class="section">
+          <div class="page-head"><div><h1>Profil Akun</h1><p>Informasi akun yang sedang digunakan.</p></div></div>
+          <div class="panel"><div class="panel-body" style="max-width:600px"><label>Nama Lengkap</label><input id="profileName" disabled><label>Email</label><input id="profileEmail" disabled><label>Hak Akses</label><input id="profileRole" disabled><p style="font-size:11px;color:#8792a2;line-height:1.6">Perubahan nama dan hak akses dikelola oleh administrator melalui sistem pengelolaan akun.</p></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+(() => {
+  const SUPABASE_URL = "https://uofqoihmxrtlrhripblr.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lTn8yWrTHto6kdtti1xd6Q_m41M0OSS";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  let currentUser = null, currentProfile = null, letters = [];
+
+  const $ = id => document.getElementById(id);
+  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  const formatDate = value => value ? new Date(value + "T00:00:00").toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"}) : "—";
+  const showToast = message => { $("toast").textContent=message; $("toast").classList.remove("hidden"); setTimeout(()=>$("toast").classList.add("hidden"),2800); };
+  const typeLabel = type => type === "incoming" ? "Surat Masuk" : "Surat Keluar";
+  const statusLabel = status => status === "draft" ? "Draft" : status === "approved" ? "Disetujui" : status === "sent" ? "Terkirim" : "Diarsipkan";
+  const rowHTML = item => `<tr><td>${escapeHTML(item.letter_number || "Belum bernomor")}</td><td><strong>${escapeHTML(item.subject)}</strong></td><td>${typeLabel(item.letter_type)}</td><td>${formatDate(item.letter_date)}</td><td><span class="pill ${escapeHTML(item.status)}">${statusLabel(item.status)}</span></td></tr>`;
+
+  async function loadSession() {
+    const {data:{session}} = await db.auth.getSession();
+    if (session) await enterApp(session.user); else showLogin();
+  }
+  function showLogin() { $("loginView").classList.remove("hidden"); $("appView").classList.add("hidden"); }
+  async function enterApp(user) {
+    currentUser=user;
+    const {data:profile,error} = await db.from("profiles").select("id,full_name,role").eq("id",user.id).single();
+    if(error || !profile) { $("loginMessage").textContent="Profil akun tidak ditemukan. Hubungi administrator."; await db.auth.signOut(); showLogin(); return; }
+    currentProfile=profile;
+    $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
+    $("userName").textContent=profile.full_name; $("userRole").textContent=profile.role==="admin"?"Administrator":"Staf";
+    $("avatar").textContent=(profile.full_name||"U").trim().charAt(0).toUpperCase();
+    $("profileName").value=profile.full_name; $("profileEmail").value=user.email||""; $("profileRole").value=profile.role==="admin"?"Administrator":"Staf";
+    await refreshLetters();
+  }
+  async function refreshLetters() {
+    const {data,error}=await db.from("letters").select("id,letter_number,letter_type,subject,letter_date,status,created_at").order("created_at",{ascending:false}).limit(500);
+    if(error){showToast("Gagal memuat data surat: "+error.message);return;}
+    letters=data||[];
+    $("totalCount").textContent=letters.length;
+    $("incomingCount").textContent=letters.filter(x=>x.letter_type==="incoming").length;
+    $("outgoingCount").textContent=letters.filter(x=>x.letter_type==="outgoing").length;
+    $("draftCount").textContent=letters.filter(x=>x.status==="draft").length;
+    $("recentRows").innerHTML=letters.slice(0,6).map(rowHTML).join("")||'<tr><td colspan="5" class="empty">Belum ada surat tersimpan.</td></tr>';
+    renderAllRows();
+  }
+  function renderAllRows() {
+    const q=($("searchLetters").value||"").toLowerCase();
+    const filtered=letters.filter(x=>(x.subject||"").toLowerCase().includes(q)||(x.letter_number||"").toLowerCase().includes(q));
+    $("allRows").innerHTML=filtered.map(rowHTML).join("")||'<tr><td colspan="5" class="empty">Tidak ada data surat yang cocok.</td></tr>';
+  }
+  function navigate(name) {
+    document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
+    const section=$(name+"Section"); if(section)section.classList.add("active");
+    document.querySelectorAll(".nav-btn").forEach(el=>el.classList.toggle("active",el.dataset.section===name));
+    $("topTitle").textContent=({dashboard:"Dashboard",letters:"Data Surat",create:"Buat Surat",profile:"Profil Akun"})[name]||"Dashboard";
+    if(name==="letters")renderAllRows();
+    if(name==="create"){$("letterDate").value=new Date().toISOString().slice(0,10);$("formMessage").textContent="";}
+  }
+  $("loginForm").addEventListener("submit",async e=>{
+    e.preventDefault(); $("loginBtn").disabled=true; $("loginBtn").textContent="Memeriksa...";
+    $("loginMessage").textContent="";
+    const {data,error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+    $("loginBtn").disabled=false; $("loginBtn").textContent="Masuk ke Dashboard";
+    if(error){$("loginMessage").textContent="Login gagal: "+error.message;return;}
+    await enterApp(data.user);
+  });
+  $("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();currentUser=null;currentProfile=null;showLogin();});
+  document.querySelectorAll("[data-section]").forEach(btn=>btn.addEventListener("click",()=>navigate(btn.dataset.section)));
+  document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>navigate(btn.dataset.go)));
+  $("searchLetters").addEventListener("input",renderAllRows);
+  $("letterForm").addEventListener("submit",async e=>{
+    e.preventDefault(); if(!currentUser)return;
+    $("saveLetterBtn").disabled=true; $("saveLetterBtn").textContent="Menyimpan...";
+    const payload={letter_type:$("letterType").value,letter_date:$("letterDate").value,subject:$("subject").value.trim(),sender:$("sender").value.trim()||null,recipient:$("recipient").value.trim()||null,content:$("letterContent").value.trim()||null,status:"draft",created_by:currentUser.id};
+    const {error}=await db.from("letters").insert(payload);
+    $("saveLetterBtn").disabled=false; $("saveLetterBtn").textContent="Simpan sebagai Draft";
+    if(error){$("formMessage").textContent="Gagal menyimpan: "+error.message;return;}
+    $("letterForm").reset(); $("letterDate").value=new Date().toISOString().slice(0,10);
+    showToast("Data surat berhasil disimpan sebagai draft."); await refreshLetters(); navigate("letters");
+  });
+  db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"){showLogin();} });
+  loadSession();
+})();
+</script>
+</body>
+</html>
