@@ -24,7 +24,7 @@
     .section{display:none}.section.active{display:block}.toast{position:fixed;right:22px;bottom:22px;background:var(--navy);color:#fff;padding:13px 17px;border-radius:10px;font-size:12px;box-shadow:0 8px 30px #0002;z-index:10}
     @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{min-height:auto;padding:14px}.side-brand{padding-bottom:12px}.sidebar nav,.nav-label,.side-bottom{display:none}.topbar{padding:0 18px}.content{padding:22px 18px}.stats{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:560px){.stats{grid-template-columns:1fr 1fr;gap:9px}.stat{padding:13px}.stat strong{font-size:22px}.page-head{flex-direction:column}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.login-card{padding:25px}}
-    @media print{.sidebar,.topbar,.no-print,.page-head button{display:none!important}.app{display:block}.content{padding:0}.panel{border:0}.panel-head{padding-left:0}body{background:#fff}}
+    .settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.code-list{display:grid;gap:8px}.code-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:12px}.code-item small{display:block;color:var(--muted);margin-top:3px}.code-item button{padding:6px 9px;font-size:11px}.code-fields{background:#fbfaf7;border:1px solid #eee7d8;border-radius:12px;padding:14px;margin:8px 0 18px}.code-preview{font-weight:800;color:var(--navy);letter-spacing:.4px;font-size:16px;padding:12px;background:#f6f4ef;border-radius:9px;margin-top:12px}.admin-only{display:none!important}.admin-only.visible{display:block!important}\n    @media(max-width:900px){.settings-grid{grid-template-columns:1fr}}\n    @media print{.sidebar,.topbar,.no-print,.page-head button{display:none!important}.app{display:block}.content{padding:0}.panel{border:0}.panel-head{padding-left:0}body{background:#fff}}
   </style>
 </head>
 <body>
@@ -53,7 +53,7 @@
         <button class="nav-btn" data-section="letters"><span>▤</span>Data Surat</button>
         <button class="nav-btn" data-section="create"><span>＋</span>Buat Surat</button>
         <div class="nav-label">PENGELOLAAN</div>
-        <button class="nav-btn" data-section="profile"><span>◎</span>Profil Akun</button>
+        <button class="nav-btn admin-only" id="settingsNav" data-section="settings"><span>⚙</span>Pengaturan Kode Surat</button>\n        <button class="nav-btn" data-section="profile"><span>◎</span>Profil Akun</button>
       </nav>
       <div class="side-bottom">Pondok Pesantren Darussalam<br>Administrasi Persuratan Digital<br><span style="color:#c6a15b">Versi awal · 1.0</span></div>
     </aside>
@@ -88,6 +88,24 @@
             </div><div class="actions"><button type="button" class="btn btn-light" data-go="letters">Batal</button><button class="btn btn-primary" id="saveLetterBtn" type="submit">Simpan sebagai Draft</button></div><div id="formMessage" class="message"></div></form>
           </div></div>
         </section>
+        <section id="settingsSection" class="section">
+          <div class="page-head"><div><h1>Pengaturan Kode Surat</h1><p>Kelola kode jabatan, jenis surat, dan organisasi untuk penomoran resmi.</p></div></div>
+          <div class="notice">Menu ini hanya dapat digunakan administrator. Kode yang dinonaktifkan tidak akan muncul saat staf membuat surat.</div>
+          <div class="settings-grid">
+            <div class="panel"><div class="panel-head"><h3>Kode Jabatan</h3></div><div class="panel-body">
+              <form id="positionForm"><label>Kode</label><input id="positionValue" maxlength="12" placeholder="Contoh: A" required><label>Nama Jabatan</label><input id="positionLabel" placeholder="Contoh: Ketua" required><button class="btn btn-primary btn-block" type="submit">＋ Tambah Kode Jabatan</button></form>
+              <div class="code-list" id="positionList" style="margin-top:16px"></div>
+            </div></div>
+            <div class="panel"><div class="panel-head"><h3>Kode Jenis Surat</h3></div><div class="panel-body">
+              <form id="purposeForm"><label>Kode</label><input id="purposeValue" maxlength="12" placeholder="Contoh: 1" required><label>Nama Jenis Surat</label><input id="purposeLabel" placeholder="Contoh: Izin" required><button class="btn btn-primary btn-block" type="submit">＋ Tambah Kode Jenis</button></form>
+              <div class="code-list" id="purposeList" style="margin-top:16px"></div>
+            </div></div>
+            <div class="panel"><div class="panel-head"><h3>Kode Organisasi</h3></div><div class="panel-body">
+              <form id="organizationForm"><label>Kode</label><input id="organizationValue" maxlength="20" placeholder="Contoh: OPPD" required><label>Nama Organisasi</label><input id="organizationLabel" placeholder="Nama organisasi" required><button class="btn btn-primary btn-block" type="submit">＋ Tambah Organisasi</button></form>
+              <div class="code-list" id="organizationList" style="margin-top:16px"></div>
+            </div></div>
+          </div>
+        </section>
         <section id="profileSection" class="section">
           <div class="page-head"><div><h1>Profil Akun</h1><p>Informasi akun yang sedang digunakan.</p></div></div>
           <div class="panel"><div class="panel-body" style="max-width:600px"><label>Nama Lengkap</label><input id="profileName" disabled><label>Email</label><input id="profileEmail" disabled><label>Hak Akses</label><input id="profileRole" disabled><p style="font-size:11px;color:#8792a2;line-height:1.6">Perubahan nama dan hak akses dikelola oleh administrator melalui sistem pengelolaan akun.</p></div></div>
@@ -102,8 +120,7 @@
   const SUPABASE_URL = "https://uofqoihmxrtlrhripblr.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lTn8yWrTHto6kdtti1xd6Q_m41M0OSS";
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-  let currentUser = null, currentProfile = null, letters = [];
-
+  let currentUser = null, currentProfile = null, letters = [], codeOptions = [];
   const $ = id => document.getElementById(id);
   const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const formatDate = value => value ? new Date(value + "T00:00:00").toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"}) : "—";
@@ -111,7 +128,55 @@
   const typeLabel = type => type === "incoming" ? "Surat Masuk" : "Surat Keluar";
   const statusLabel = status => status === "draft" ? "Draft" : status === "approved" ? "Disetujui" : status === "sent" ? "Terkirim" : "Diarsipkan";
   const rowHTML = item => `<tr><td>${escapeHTML(item.letter_number || "Belum bernomor")}</td><td><strong>${escapeHTML(item.subject)}</strong></td><td>${typeLabel(item.letter_type)}</td><td>${formatDate(item.letter_date)}</td><td><span class="pill ${escapeHTML(item.status)}">${statusLabel(item.status)}</span></td></tr>`;
-
+  const romanMonth = month => ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][month-1] || "I";
+  const optionsBy = category => codeOptions.filter(x=>x.category===category && x.is_active);
+  function fillSelect(id, category, placeholder) {
+    const select=$(id), previous=select.value;
+    select.innerHTML=`<option value="">${placeholder}</option>`+optionsBy(category).map(x=>`<option value="${escapeHTML(x.code)}">${escapeHTML(x.code)} — ${escapeHTML(x.label)}</option>`).join("");
+    if([...select.options].some(o=>o.value===previous))select.value=previous;
+  }
+  function updateNumberPreview() {
+    const date=$("letterDate").value ? new Date($("letterDate").value+"T00:00:00") : new Date();
+    const year=date.getFullYear(), month=romanMonth(date.getMonth()+1);
+    const p=$("positionCode").value, k=$("purposeCode").value, org=$("organizationCode").value;
+    $("numberPreview").textContent=`${String(1).padStart(3,"0")}/${p||"A"}.${k||"1"}/${org||"OPPD"}/${month}/${year} (nomor urut otomatis)`;
+  }
+  async function loadCodeOptions() {
+    const {data,error}=await db.from("letter_code_options").select("id,category,code,label,is_active").order("category").order("code");
+    if(error){showToast("Gagal memuat kode surat: "+error.message);return;}
+    codeOptions=data||[];
+    fillSelect("positionCode","position","Pilih kode jabatan");
+    fillSelect("purposeCode","purpose","Pilih kode jenis surat");
+    fillSelect("organizationCode","organization","Pilih organisasi");
+    renderCodeLists();
+    updateNumberPreview();
+  }
+  function renderCodeLists() {
+    const groups=[["position","positionList"],["purpose","purposeList"],["organization","organizationList"]];
+    groups.forEach(([category,target])=>{
+      const rows=codeOptions.filter(x=>x.category===category);
+      $(target).innerHTML=rows.map(x=>`<div class="code-item"><div><strong>${escapeHTML(x.code)} — ${escapeHTML(x.label)}</strong><small>${x.is_active?"Aktif":"Nonaktif"}</small></div><div class="toolbar"><button class="btn btn-light" data-toggle-code="${x.id}" data-active="${x.is_active}">${x.is_active?"Nonaktifkan":"Aktifkan"}</button><button class="btn btn-danger" data-delete-code="${x.id}">Hapus</button></div></div>`).join("")||'<p class="empty">Belum ada kode.</p>';
+    });
+    document.querySelectorAll("[data-toggle-code]").forEach(btn=>btn.addEventListener("click",()=>toggleCode(btn.dataset.toggleCode,btn.dataset.active==="true")));
+    document.querySelectorAll("[data-delete-code]").forEach(btn=>btn.addEventListener("click",()=>deleteCode(btn.dataset.deleteCode)));
+  }
+  async function addCode(category, code, label) {
+    if(!currentProfile || currentProfile.role!=="admin")return;
+    const {error}=await db.from("letter_code_options").insert({category,code:code.trim().toUpperCase(),label:label.trim(),is_active:true});
+    if(error){showToast("Gagal menambah kode: "+error.message);return;}
+    showToast("Kode berhasil ditambahkan."); await loadCodeOptions();
+  }
+  async function toggleCode(id, active) {
+    const {error}=await db.from("letter_code_options").update({is_active:!active}).eq("id",id);
+    if(error){showToast("Gagal mengubah kode: "+error.message);return;}
+    await loadCodeOptions();
+  }
+  async function deleteCode(id) {
+    if(!confirm("Hapus kode ini?"))return;
+    const {error}=await db.from("letter_code_options").delete().eq("id",id);
+    if(error){showToast("Gagal menghapus kode: "+error.message);return;}
+    await loadCodeOptions();
+  }
   async function loadSession() {
     const {data:{session}} = await db.auth.getSession();
     if (session) await enterApp(session.user); else showLogin();
@@ -126,7 +191,8 @@
     $("userName").textContent=profile.full_name; $("userRole").textContent=profile.role==="admin"?"Administrator":"Staf";
     $("avatar").textContent=(profile.full_name||"U").trim().charAt(0).toUpperCase();
     $("profileName").value=profile.full_name; $("profileEmail").value=user.email||""; $("profileRole").value=profile.role==="admin"?"Administrator":"Staf";
-    await refreshLetters();
+    $("settingsNav").classList.toggle("visible",profile.role==="admin");
+    await Promise.all([refreshLetters(),loadCodeOptions()]);
   }
   async function refreshLetters() {
     const {data,error}=await db.from("letters").select("id,letter_number,letter_type,subject,letter_date,status,created_at").order("created_at",{ascending:false}).limit(500);
@@ -148,9 +214,10 @@
     document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
     const section=$(name+"Section"); if(section)section.classList.add("active");
     document.querySelectorAll(".nav-btn").forEach(el=>el.classList.toggle("active",el.dataset.section===name));
-    $("topTitle").textContent=({dashboard:"Dashboard",letters:"Data Surat",create:"Buat Surat",profile:"Profil Akun"})[name]||"Dashboard";
+    $("topTitle").textContent=({dashboard:"Dashboard",letters:"Data Surat",create:"Buat Surat",profile:"Profil Akun",settings:"Pengaturan Kode Surat"})[name]||"Dashboard";
     if(name==="letters")renderAllRows();
-    if(name==="create"){$("letterDate").value=new Date().toISOString().slice(0,10);$("formMessage").textContent="";}
+    if(name==="create"){$("letterDate").value=new Date().toISOString().slice(0,10);$("formMessage").textContent="";updateNumberPreview();}
+    if(name==="settings" && currentProfile?.role!=="admin")navigate("dashboard");
   }
   $("loginForm").addEventListener("submit",async e=>{
     e.preventDefault(); $("loginBtn").disabled=true; $("loginBtn").textContent="Memeriksa...";
@@ -164,15 +231,24 @@
   document.querySelectorAll("[data-section]").forEach(btn=>btn.addEventListener("click",()=>navigate(btn.dataset.section)));
   document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>navigate(btn.dataset.go)));
   $("searchLetters").addEventListener("input",renderAllRows);
+  $("letterType").addEventListener("change",()=>{$("outgoingCodeFields").classList.toggle("hidden",$("letterType").value!=="outgoing");});
+  ["positionCode","purposeCode","organizationCode","letterDate"].forEach(id=>$(id).addEventListener("change",updateNumberPreview));
+  $("positionForm").addEventListener("submit",async e=>{e.preventDefault();await addCode("position",$("positionValue").value,$("positionLabel").value);e.target.reset();});
+  $("purposeForm").addEventListener("submit",async e=>{e.preventDefault();await addCode("purpose",$("purposeValue").value,$("purposeLabel").value);e.target.reset();});
+  $("organizationForm").addEventListener("submit",async e=>{e.preventDefault();await addCode("organization",$("organizationValue").value,$("organizationLabel").value);e.target.reset();});
   $("letterForm").addEventListener("submit",async e=>{
     e.preventDefault(); if(!currentUser)return;
+    const outgoing=$("letterType").value==="outgoing";
+    if(outgoing && (!$("positionCode").value||!$("purposeCode").value||!$("organizationCode").value)){
+      $("formMessage").textContent="Lengkapi kode jabatan, jenis surat, dan organisasi terlebih dahulu.";return;
+    }
     $("saveLetterBtn").disabled=true; $("saveLetterBtn").textContent="Menyimpan...";
-    const payload={letter_type:$("letterType").value,letter_date:$("letterDate").value,subject:$("subject").value.trim(),sender:$("sender").value.trim()||null,recipient:$("recipient").value.trim()||null,content:$("letterContent").value.trim()||null,status:"draft",created_by:currentUser.id};
-    const {error}=await db.from("letters").insert(payload);
+    const payload={p_letter_type:$("letterType").value,p_letter_date:$("letterDate").value,p_subject:$("subject").value.trim(),p_sender:$("sender").value.trim()||null,p_recipient:$("recipient").value.trim()||null,p_content:$("letterContent").value.trim()||null,p_position_code:outgoing?$("positionCode").value:null,p_purpose_code:outgoing?$("purposeCode").value:null,p_org_code:outgoing?$("organizationCode").value:null};
+    const {error}=await db.rpc("create_letter_with_number",payload);
     $("saveLetterBtn").disabled=false; $("saveLetterBtn").textContent="Simpan sebagai Draft";
     if(error){$("formMessage").textContent="Gagal menyimpan: "+error.message;return;}
-    $("letterForm").reset(); $("letterDate").value=new Date().toISOString().slice(0,10);
-    showToast("Data surat berhasil disimpan sebagai draft."); await refreshLetters(); navigate("letters");
+    $("letterForm").reset(); $("letterDate").value=new Date().toISOString().slice(0,10);$("outgoingCodeFields").classList.remove("hidden");
+    showToast("Surat berhasil disimpan dengan nomor resmi."); await refreshLetters(); navigate("letters");
   });
   db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"){showLogin();} });
   loadSession();
